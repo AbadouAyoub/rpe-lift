@@ -34,8 +34,12 @@ workflows:
           PRIVATE_KEY_PATH=/tmp/cert_private_key.pem
           if [ -n "$CERTIFICATE_PRIVATE_KEY" ]; then
             echo "$CERTIFICATE_PRIVATE_KEY" > "$PRIVATE_KEY_PATH"
+            echo "Using existing key from env var."
           else
             openssl genrsa -out "$PRIVATE_KEY_PATH" 2048
+            echo "=== COPY THIS KEY TO CODEMAGIC ENV VAR 'CERTIFICATE_PRIVATE_KEY' ==="
+            cat "$PRIVATE_KEY_PATH"
+            echo "=== END OF KEY ==="
           fi
 
           echo "=== Fetching signing files ==="
