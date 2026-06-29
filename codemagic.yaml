@@ -47,7 +47,8 @@ workflows:
           echo "=== Preparing certificate private key ==="
           if [ -n "$CERTIFICATE_PRIVATE_KEY_B64" ]; then
             echo "Using stored key (base64)."
-            echo "$CERTIFICATE_PRIVATE_KEY_B64" | base64 --decode > "$PRIVATE_KEY_PATH"
+            echo "$CERTIFICATE_PRIVATE_KEY_B64" | base64 --decode | openssl rsa -out "$PRIVATE_KEY_PATH" 2>/dev/null \
+              || echo "$CERTIFICATE_PRIVATE_KEY_B64" | base64 --decode | openssl pkey -traditional -out "$PRIVATE_KEY_PATH"
           else
             openssl genrsa -out "$PRIVATE_KEY_PATH" 2048
             echo "=== SAVE THIS AS CERTIFICATE_PRIVATE_KEY_B64 IN CODEMAGIC ENV VARS ==="
