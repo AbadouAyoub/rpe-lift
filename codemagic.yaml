@@ -4,6 +4,9 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
 
+    integrations:
+      app_store_connect: Soulio_AppStoreConnect
+
     environment:
       vars:
         BUNDLE_ID: com.abadouay.rpelift
@@ -22,6 +25,15 @@ workflows:
       - name: Install CocoaPods
         script: cd ios && pod install
 
+      - name: Set up signing
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_DEVELOPMENT \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+
       - name: Build iOS
         script: |
           WORKSPACE=$(find ios -name "*.xcworkspace" -maxdepth 1 | head -1)
@@ -29,19 +41,14 @@ workflows:
           ARCHIVE_PATH="$CM_BUILD_DIR/build/ios/$SCHEME.xcarchive"
           IPA_DIR="$CM_BUILD_DIR/build/ios/ipa"
           mkdir -p "$IPA_DIR"
-
           echo "Workspace: $WORKSPACE | Scheme: $SCHEME"
 
-          # Archive
           xcodebuild archive \
             -workspace "$WORKSPACE" \
             -scheme "$SCHEME" \
             -archivePath "$ARCHIVE_PATH" \
-            CODE_SIGN_STYLE=Automatic \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            -allowProvisioningUpdates
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID"
 
-          # Export IPA
           cat > /tmp/export_options.plist << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -52,7 +59,7 @@ workflows:
             <key>teamID</key>
             <string>$APPLE_TEAM_ID</string>
             <key>signingStyle</key>
-            <string>automatic</string>
+            <string>manual</string>
           </dict>
           </plist>
           EOF
@@ -60,8 +67,7 @@ workflows:
           xcodebuild -exportArchive \
             -archivePath "$ARCHIVE_PATH" \
             -exportPath "$IPA_DIR" \
-            -exportOptionsPlist /tmp/export_options.plist \
-            -allowProvisioningUpdates
+            -exportOptionsPlist /tmp/export_options.plist
 
     artifacts:
       - $CM_BUILD_DIR/build/ios/ipa/*.ipa
