@@ -1,6 +1,6 @@
 workflows:
-  ios-development:
-    name: iOS Development Build
+  ios-testflight:
+    name: iOS TestFlight Build
     max_build_duration: 60
     instance_type: mac_mini_m2
 
@@ -29,9 +29,10 @@ workflows:
         script: |
           keychain initialize
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_DEVELOPMENT \
+            --type IOS_APP_STORE \
             --create
           keychain add-certificates
+          xcode-project use-profiles
 
       - name: Build iOS
         script: |
@@ -49,6 +50,9 @@ workflows:
       - /tmp/xcodebuild_logs/*.log
 
     publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
       email:
         recipients:
           - ayoub.abadou.etu23@ensam.ma
