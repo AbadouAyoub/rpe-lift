@@ -10,8 +10,7 @@ workflows:
     environment:
       vars:
         BUNDLE_ID: com.abadouay.rpelift
-        XCODE_SCHEME: rpe-lift
-        XCODE_WORKSPACE: ios/rpe-lift.xcworkspace
+        APPLE_TEAM_ID: 5G936X6GYY
       node: 22.4.0
       xcode: latest
       cocoapods: default
@@ -26,15 +25,6 @@ workflows:
       - name: Install CocoaPods
         script: cd ios && pod install
 
-      - name: Fetch signing files
-        script: |
-          keychain initialize
-          app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_DEVELOPMENT \
-            --create
-          keychain add-certificates
-          xcode-project use-profiles
-
       - name: Build iOS
         script: |
           WORKSPACE=$(find ios -name "*.xcworkspace" -maxdepth 1 | head -1)
@@ -43,7 +33,7 @@ workflows:
           xcode-project build-ipa \
             --workspace "$WORKSPACE" \
             --scheme "$SCHEME" \
-            --config "Debug"
+            --archive-xcargs "CODE_SIGN_STYLE=Automatic DEVELOPMENT_TEAM=$APPLE_TEAM_ID"
 
     artifacts:
       - build/ios/ipa/*.ipa
