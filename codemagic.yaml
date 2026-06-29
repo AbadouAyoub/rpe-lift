@@ -21,6 +21,17 @@ workflows:
       - name: Install dependencies
         script: npm install
 
+      - name: Set build number
+        script: |
+          node -e "
+          const fs = require('fs');
+          const app = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+          app.expo.ios = app.expo.ios || {};
+          app.expo.ios.buildNumber = process.env.BUILD_NUMBER;
+          fs.writeFileSync('app.json', JSON.stringify(app, null, 2));
+          console.log('iOS build number set to:', process.env.BUILD_NUMBER);
+          "
+
       - name: Expo prebuild
         script: npx expo prebuild --platform ios --clean
 
