@@ -1,4 +1,15 @@
 {
+  "permissions": {
+    "allow": [
+      "PowerShell(java -version 2>&1)",
+      "PowerShell($env:JAVA_HOME)",
+      "PowerShell(adb devices; Write-Output \"---\"; ls \"c:\\\\Users\\\\Ayoub abadou\\\\Desktop\\\\Apps\\\\rpe-lift\\\\android\" 2>$null | Select-Object -First 5 | ForEach-Object { $_.Name })",
+      "PowerShell(Get-Process -Name \"java\" -ErrorAction SilentlyContinue | Select-Object Id, CPU, @{N='Mem\\(MB\\)';E={[math]::Round\\($_.WorkingSet/1MB\\)}} | Format-Table -AutoSize)",
+      "PowerShell(Get-Process -Name \"java\" -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Process -Name \"cmd\",\"node\",\"expo\" -ErrorAction SilentlyContinue)",
+      "PowerShell(Start-Process -FilePath \"C:\\\\Android\\\\sdk\\\\emulator\\\\emulator.exe\" -ArgumentList \"-avd Resizable_Experimental -no-snapshot-load\" -WindowStyle Minimized)"
+    ]
+  },
   "enabledPlugins": {
     "expo@claude-plugins-official": true
   }
