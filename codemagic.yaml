@@ -8,12 +8,10 @@ workflows:
       app_store_connect: Soulio_AppStoreConnect
 
     environment:
-      ios_signing:
-        distribution_type: development
-        bundle_identifier: com.abadouay.rpelift
       vars:
         BUNDLE_ID: com.abadouay.rpelift
         XCODE_SCHEME: rpe-lift
+        XCODE_WORKSPACE: ios/rpe-lift.xcworkspace
       node: 22.4.0
       xcode: latest
       cocoapods: default
@@ -26,17 +24,21 @@ workflows:
         script: npx expo prebuild --platform ios --clean
 
       - name: Install CocoaPods
-        script: |
-          cd ios && pod install
+        script: cd ios && pod install
 
-      - name: Set up code signing
+      - name: Fetch signing files
         script: |
-          xcode-project use-profiles --warn-only
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_DEVELOPMENT \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
 
       - name: Build iOS
         script: |
           xcode-project build-ipa \
-            --workspace "ios/rpe-lift.xcworkspace" \
+            --workspace "$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
             --config "Debug"
 
