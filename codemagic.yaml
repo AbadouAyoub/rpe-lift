@@ -4,13 +4,15 @@ workflows:
     max_build_duration: 60
     instance_type: mac_mini_m2
 
+    integrations:
+      app_store_connect: Codemagic Magic API key
+
     environment:
       ios_signing:
         distribution_type: development
         bundle_identifier: com.abadouay.rpelift
       vars:
         BUNDLE_ID: com.abadouay.rpelift
-        XCODE_WORKSPACE: ios/rpe-lift.xcworkspace
         XCODE_SCHEME: rpe-lift
       node: 22.4.0
       xcode: latest
@@ -25,14 +27,18 @@ workflows:
 
       - name: Install CocoaPods
         script: |
-          cd ios
-          pod install
+          cd ios && pod install
+
+      - name: Set up code signing
+        script: |
+          xcode-project use-profiles --warn-only
 
       - name: Build iOS
         script: |
           xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME"
+            --workspace "ios/rpe-lift.xcworkspace" \
+            --scheme "$XCODE_SCHEME" \
+            --config "Debug"
 
     artifacts:
       - build/ios/ipa/*.ipa
@@ -41,7 +47,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - abadouay@gmail.com
+          - ayoub.abadou.etu23@ensam.ma
         notify:
           success: true
           failure: true
