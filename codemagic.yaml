@@ -30,9 +30,18 @@ workflows:
           set -e
           keychain initialize
 
+          echo "=== Preparing certificate private key ==="
+          PRIVATE_KEY_PATH=/tmp/cert_private_key.pem
+          if [ -n "$CERTIFICATE_PRIVATE_KEY" ]; then
+            echo "$CERTIFICATE_PRIVATE_KEY" > "$PRIVATE_KEY_PATH"
+          else
+            openssl genrsa -out "$PRIVATE_KEY_PATH" 2048
+          fi
+
           echo "=== Fetching signing files ==="
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
+            --certificate-key=@file:"$PRIVATE_KEY_PATH" \
             --create
 
           echo "=== Provisioning profiles on disk ==="
