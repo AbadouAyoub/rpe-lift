@@ -8,6 +8,7 @@
     "scheme": "rpelift",
     "userInterfaceStyle": "automatic",
     "ios": {
+      "bundleIdentifier": "com.abadouay.rpelift",
       "icon": "./assets/expo.icon"
     },
     "android": {
