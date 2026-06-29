@@ -32,24 +32,24 @@ workflows:
           set -e
           keychain initialize
 
-          echo "=== Fetching signing files ==="
-          if [ -n "$CERTIFICATE_PRIVATE_KEY" ]; then
-            echo "Using existing key from env var."
-            app-store-connect fetch-signing-files "$BUNDLE_ID" \
-              --type IOS_APP_STORE \
-              --certificate-key=@env:CERTIFICATE_PRIVATE_KEY \
-              --create
+          PRIVATE_KEY_PATH=/tmp/cert_private_key.pem
+          echo "=== Preparing certificate private key ==="
+          if [ -n "$CERTIFICATE_PRIVATE_KEY_B64" ]; then
+            echo "Using stored key (base64)."
+            echo "$CERTIFICATE_PRIVATE_KEY_B64" | base64 --decode > "$PRIVATE_KEY_PATH"
           else
-            PRIVATE_KEY_PATH=/tmp/cert_private_key.pem
             openssl genrsa -out "$PRIVATE_KEY_PATH" 2048
-            echo "=== COPY THIS KEY TO CODEMAGIC ENV VAR 'CERTIFICATE_PRIVATE_KEY' ==="
-            cat "$PRIVATE_KEY_PATH"
-            echo "=== END OF KEY ==="
-            app-store-connect fetch-signing-files "$BUNDLE_ID" \
-              --type IOS_APP_STORE \
-              --certificate-key=@file:"$PRIVATE_KEY_PATH" \
-              --create
+            echo "=== SAVE THIS AS CERTIFICATE_PRIVATE_KEY_B64 IN CODEMAGIC ENV VARS ==="
+            base64 < "$PRIVATE_KEY_PATH" | tr -d '\n'
+            echo ""
+            echo "=== END ==="
           fi
+
+          echo "=== Fetching signing files ==="
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --certificate-key=@file:"$PRIVATE_KEY_PATH" \
+            --create
 
           echo "=== Provisioning profiles on disk ==="
           ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ || echo "no profiles dir"
