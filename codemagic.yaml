@@ -37,8 +37,10 @@ workflows:
 
       - name: Build iOS
         script: |
+          WORKSPACE=$(find ios -name "*.xcworkspace" -maxdepth 1 | head -1)
+          echo "Found workspace: $WORKSPACE"
           xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
+            --workspace "$WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
             --config "Debug"
 
