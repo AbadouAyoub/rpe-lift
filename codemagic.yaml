@@ -38,10 +38,11 @@ workflows:
       - name: Build iOS
         script: |
           WORKSPACE=$(find ios -name "*.xcworkspace" -maxdepth 1 | head -1)
-          echo "Found workspace: $WORKSPACE"
+          SCHEME=$(basename "$WORKSPACE" .xcworkspace)
+          echo "Workspace: $WORKSPACE | Scheme: $SCHEME"
           xcode-project build-ipa \
             --workspace "$WORKSPACE" \
-            --scheme "$XCODE_SCHEME" \
+            --scheme "$SCHEME" \
             --config "Debug"
 
     artifacts:
